@@ -26,13 +26,22 @@ def send_command(cmd):
 def main():
     ds = pydualsense()
     ds.init()
+    
+    # 1. THE STARTUP FIX: 
+    # Give the controller a second to read its true centered values (128)
+    # so it doesn't default to 0 and trigger a ghost movement.
+    sleep(1)
 
     # --- THE SPY POSTURES (Face Buttons) ---
-    # Sends command when pressed, returns to neutral when released
     ds.triangle_pressed += lambda state: send_command("high_posture") if state else send_command("stand")
     ds.cross_pressed += lambda state: send_command("stealth_mode") if state else send_command("stand")
     ds.square_pressed += lambda state: send_command("peek_left") if state else send_command("stand")
     ds.circle_pressed += lambda state: send_command("peek_right") if state else send_command("stand")
+
+    # 2. THE "NEVER STOP" FIX:
+    # State trackers to remember what the robot is currently doing
+    current_move = "stop"
+    current_cam = "cam_stop"
 
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     
@@ -48,8 +57,10 @@ def main():
             elif lx < 100: new_move = "left"
             elif lx > 155: new_move = "right"
 
-            if new_move != "stop":
+            # Only send a command if the joystick changed positions
+            if new_move != current_move:
                 send_command(new_move)
+                current_move = new_move
             
             # --- RIGHT JOYSTICK (Camera Pan/Tilt) ---
             ry = ds.state.RY
@@ -61,11 +72,13 @@ def main():
             elif rx < 100: new_cam = "cam_left"
             elif rx > 155: new_cam = "cam_right"
 
-            if new_cam != "cam_stop":
+            # Only send a camera command if the joystick changed positions
+            if new_cam != current_cam:
                 send_command(new_cam)
+                current_cam = new_cam
             
-            # Small delay prevents flooding the network and lagging the robot
-            sleep(0.2) 
+            # Faster polling now that we aren't spamming the network
+            sleep(0.05) 
 
     except KeyboardInterrupt:
         print("\nClosing connection.")
