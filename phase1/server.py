@@ -1,6 +1,6 @@
 import socket
 from picrawler import Picrawler 
-from robot_hat import Servo, PWM
+from robot_hat import Servo
 from time import sleep
 from vilib import Vilib
 
@@ -8,16 +8,19 @@ from vilib import Vilib
 crawler = Picrawler()           
 
 # --- START THE LIVE VIDEO FEED ---
-# Broadcasts the camera feed to http://192.168.1.75:9000/mjpg
+# Broadcasts the camera feed to your local network
 Vilib.camera_start(vflip=False, hflip=False)
 Vilib.display(local=False, web=True)
 
 # --- INITIALIZE CAMERA SERVOS ---
+# Define these outside the try block so they always exist
+pan_angle = 0
+tilt_angle = 0
+
 try:
-    pan_servo = Servo(PWM("P1"))
-    tilt_servo = Servo(PWM("P0"))
-    pan_angle = 0
-    tilt_angle = 0
+    # Modern robot_hat library uses the pin string directly
+    pan_servo = Servo("P1")
+    tilt_servo = Servo("P0")
     pan_servo.angle(pan_angle)
     tilt_servo.angle(tilt_angle)
 except Exception as e:
@@ -69,16 +72,20 @@ def start_server():
                     # --- RIGHT JOYSTICK (Camera Pan/Tilt) ---
                     elif command == 'cam_up':
                         tilt_angle = max(-90, tilt_angle - 5)
-                        tilt_servo.angle(tilt_angle)
+                        try: tilt_servo.angle(tilt_angle)
+                        except: pass
                     elif command == 'cam_down':
                         tilt_angle = min(90, tilt_angle + 5)
-                        tilt_servo.angle(tilt_angle)
+                        try: tilt_servo.angle(tilt_angle)
+                        except: pass
                     elif command == 'cam_left':
                         pan_angle = max(-90, pan_angle - 5)
-                        pan_servo.angle(pan_angle)
+                        try: pan_servo.angle(pan_angle)
+                        except: pass
                     elif command == 'cam_right':
                         pan_angle = min(90, pan_angle + 5)
-                        pan_servo.angle(pan_angle)
+                        try: pan_servo.angle(pan_angle)
+                        except: pass
                         
                     # --- THE SPY POSTURES (Face Buttons) ---
                     elif command == 'high_posture':
