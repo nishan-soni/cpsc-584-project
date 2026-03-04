@@ -2,9 +2,9 @@ from pydualsense import pydualsense
 import socket
 from time import sleep
 
-# Set up the client socket with the correct IP and Port
+# Set up the client socket
 HOST = '192.168.1.75' # Your PiCrawler's IP
-PORT = 65432           # Matching the server port
+PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -16,27 +16,57 @@ except Exception as e:
     print(f"Failed to connect: {e}")
     exit()
 
-def button_pressed(cmd):
-    client_socket.sendall(cmd.encode('utf-8'))
-
-def button_released(cmd):
-    client_socket.sendall(cmd.encode('utf-8'))
+def send_command(cmd):
+    try:
+        # Appending \n ensures the server processes each command cleanly
+        client_socket.sendall((cmd + '\n').encode('utf-8'))
+    except Exception as e:
+        print(f"Connection lost: {e}")
 
 def main():
-    # Initialize the DualSense controller
     ds = pydualsense()
     ds.init()
 
-    # Set up event handlers for buttons
-    ds.cross_pressed += lambda state: button_pressed("back") if state else button_released("stop")
-    ds.circle_pressed += lambda state: button_pressed("right") if state else button_released("stop")
-    ds.square_pressed += lambda state: button_pressed("left") if state else button_released("stop")
-    ds.triangle_pressed += lambda state: button_pressed("forward") if state else button_released("stop")
+    # --- THE SPY POSTURES (Face Buttons) ---
+    # Sends command when pressed, returns to neutral when released
+    ds.triangle_pressed += lambda state: send_command("high_posture") if state else send_command("stand")
+    ds.cross_pressed += lambda state: send_command("stealth_mode") if state else send_command("stand")
+    ds.square_pressed += lambda state: send_command("peek_left") if state else send_command("stand")
+    ds.circle_pressed += lambda state: send_command("peek_right") if state else send_command("stand")
 
+    print("Listening for PS5 controller input. Press Ctrl+C to exit.")
+    
     try:
-        print("Listening for PS5 controller input. Press Ctrl+C to exit.")
         while True:
-            pass  # Keep the script running to listen for events
+            # --- LEFT JOYSTICK (Movement) ---
+            ly = ds.state.LY
+            lx = ds.state.LX
+            
+            new_move = "stop"
+            if ly < 100: new_move = "forward"
+            elif ly > 155: new_move = "back"
+            elif lx < 100: new_move = "left"
+            elif lx > 155: new_move = "right"
+
+            if new_move != "stop":
+                send_command(new_move)
+            
+            # --- RIGHT JOYSTICK (Camera Pan/Tilt) ---
+            ry = ds.state.RY
+            rx = ds.state.RX
+            
+            new_cam = "cam_stop"
+            if ry < 100: new_cam = "cam_up"
+            elif ry > 155: new_cam = "cam_down"
+            elif rx < 100: new_cam = "cam_left"
+            elif rx > 155: new_cam = "cam_right"
+
+            if new_cam != "cam_stop":
+                send_command(new_cam)
+            
+            # Small delay prevents flooding the network and lagging the robot
+            sleep(0.2) 
+
     except KeyboardInterrupt:
         print("\nClosing connection.")
     finally:
