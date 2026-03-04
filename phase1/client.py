@@ -3,7 +3,7 @@ import socket
 from time import sleep
 
 # Set up the client socket with the correct IP and Port
-HOST = '172.17.10.193' # Your PiCrawler's IP
+HOST = '192.168.1.75' # Your PiCrawler's IP
 PORT = 65432           # Matching the server port
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
