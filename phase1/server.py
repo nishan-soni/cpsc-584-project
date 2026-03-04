@@ -1,9 +1,9 @@
 import socket
-from picrawler import PiCrawler
+from picrawler import Picrawler 
 from time import sleep
 
 # Initialize your PiCrawler
-crawler = PiCrawler()
+crawler = Picrawler()           
 
 # Define Server details
 HOST = '0.0.0.0'  # Listen on all available network interfaces
