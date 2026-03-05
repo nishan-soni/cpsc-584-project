@@ -1,6 +1,5 @@
 import socket
 from picrawler import Picrawler 
-from robot_hat import Servo
 from time import sleep
 from vilib import Vilib
 
@@ -8,30 +7,14 @@ from vilib import Vilib
 crawler = Picrawler()           
 
 # --- START THE LIVE VIDEO FEED ---
-# Broadcasts the camera feed to your local network
 Vilib.camera_start(vflip=False, hflip=False)
 Vilib.display(local=False, web=True)
-
-# --- INITIALIZE CAMERA SERVOS ---
-# Define these outside the try block so they always exist
-pan_angle = 0
-tilt_angle = 0
-
-try:
-    # Modern robot_hat library uses the pin string directly
-    pan_servo = Servo("P1")
-    tilt_servo = Servo("P0")
-    pan_servo.angle(pan_angle)
-    tilt_servo.angle(tilt_angle)
-except Exception as e:
-    print(f"Warning: Camera servos not detected on P0/P1. {e}")
 
 # Define Server details
 HOST = '0.0.0.0'
 PORT = 65432
 
 def start_server():
-    global pan_angle, tilt_angle
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
     server_socket.bind((HOST, PORT))
@@ -50,7 +33,6 @@ def start_server():
                 if not data:
                     break # Client disconnected
                 
-                # Split commands by newline to handle fast controller inputs smoothly
                 commands = data.decode('utf-8').strip().split('\n')
                 
                 for command in commands:
@@ -69,39 +51,32 @@ def start_server():
                     elif command == 'stop':
                         crawler.do_action('stand', 1, 80)
                         
-                    # --- RIGHT JOYSTICK (Camera Pan/Tilt) ---
-                    elif command == 'cam_up':
-                        tilt_angle = max(-90, tilt_angle - 5)
-                        try: tilt_servo.angle(tilt_angle)
-                        except: pass
-                    elif command == 'cam_down':
-                        tilt_angle = min(90, tilt_angle + 5)
-                        try: tilt_servo.angle(tilt_angle)
-                        except: pass
-                    elif command == 'cam_left':
-                        pan_angle = max(-90, pan_angle - 5)
-                        try: pan_servo.angle(pan_angle)
-                        except: pass
-                    elif command == 'cam_right':
-                        pan_angle = min(90, pan_angle + 5)
-                        try: pan_servo.angle(pan_angle)
-                        except: pass
+                    # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
+                    elif command == 'look_up':
+                        # Front legs straight (-90), back legs crouched (-30)
+                        crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-30], [50,50,-30]], 80)
+                    elif command == 'look_down':
+                        # Front legs crouched (-30), back legs straight (-90)
+                        crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-90], [50,50,-90]], 80)
+                    elif command == 'lean_left':
+                        crawler.do_step([[50,50,-90], [50,50,-30], [50,50,-30], [50,50,-90]], 80)
+                    elif command == 'lean_right':
+                        crawler.do_step([[50,50,-30], [50,50,-90], [50,50,-90], [50,50,-30]], 80)
+                    elif command == 'cam_stop':
+                        crawler.do_action('stand', 1, 80)
                         
                     # --- THE SPY POSTURES (Face Buttons) ---
                     elif command == 'high_posture':
-                        # Stand tall (A highly negative Z value pushes the body up)
                         crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], 80)
                     elif command == 'stealth_mode':
-                        # Crawl extremely low to the ground
                         crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], 80)
-                    elif command == 'peek_left':
-                        # Right legs extend fully, left legs compress (Robot leans left)
-                        crawler.do_step([[50,50,-90], [50,50,-30], [50,50,-30], [50,50,-90]], 80)
-                    elif command == 'peek_right':
-                        # Left legs extend fully, right legs compress (Robot leans right)
-                        crawler.do_step([[50,50,-30], [50,50,-90], [50,50,-90], [50,50,-30]], 80)
+                    elif command == 'strafe_left':
+                        # Right legs push OUT (Y=90), Left legs pull IN (Y=10) -> Body shifts strictly left
+                        crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], 80)
+                    elif command == 'strafe_right':
+                        # Right legs pull IN (Y=10), Left legs push OUT (Y=90) -> Body shifts strictly right
+                        crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], 80)
                     elif command == 'stand':
-                        # Return to neutral resting position when face buttons are released
                         crawler.do_action('stand', 1, 80)
                         
     except KeyboardInterrupt:
