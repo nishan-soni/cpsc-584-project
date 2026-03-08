@@ -166,24 +166,6 @@ def start_server():
                                 Vilib.rec_video_start()
                                 is_recording = True
                                 print(f"🎥 Video recording STARTED! Saving as {current_video_name}.avi in {VIDS_DIR}")
-                                
-                        # --- THE D-PAD (Micro Movements) ---
-                        elif command == 'step_forward':
-                            import time
-                            crawler.do_action('forward', 1, current_speed)
-                            time.sleep(0.3)
-                        elif command == 'step_back':
-                            import time
-                            crawler.do_action('backward', 1, current_speed)
-                            time.sleep(0.3)
-                        elif command == 'step_left':
-                            import time
-                            crawler.do_action('turn left angle', 1, current_speed)
-                            time.sleep(0.3)
-                        elif command == 'step_right':
-                            import time
-                            crawler.do_action('turn right angle', 1, current_speed)
-                            time.sleep(0.3)
                             
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
@@ -223,15 +205,15 @@ def start_server():
                 elif current_move == 'left':
                     crawler.do_action('turn left', 1, current_speed)
                 elif current_move == 'strafe_left':
-                    # Play Dead (Deactivation / Stealth drop)
-                    crawler.do_step([[45, 45, -10], [45, 0, -10], [45, 0, -10], [45, 45, -10]], current_speed)
-                    crawler.do_step([[45, 45, 100], [45, 45, 100], [45, 45, 100], [45, 45, 100]], current_speed)
+                    # Look Left (Tactical Peek)
+                    crawler.do_step([[45, 0, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]], current_speed)
+                    crawler.do_step([[0, 45, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]], current_speed)
+                    crawler.do_step([[0, 45, -50], [45, 45, -35], [45, 45, -50], [45, 0, -50]], current_speed)
                 elif current_move == 'strafe_right':
-                    # Fighting (Melee Attack / Pounce)
-                    crawler.do_step([[40, 40, -60], [20, 60, 110], [60, 60, -60], [60, 60, -60]], current_speed)
-                    crawler.do_step([[40, 40, -40], [20, 30, -40], [60, 60, -60], [60, 60, -60]], current_speed)
-                    crawler.do_step([[20, 60, 110], [20, 30, -60], [60, 60, -60], [60, 60, -60]], current_speed)
-                    crawler.do_step([[20, 30, -40], [20, 30, -40], [60, 60, -60], [60, 60, -60]], current_speed)
+                    # Look Right (Tactical Peek)
+                    crawler.do_step([[45, 45, -50], [0, 45, -50], [45, 0, -50], [45, 45, -50]], current_speed)
+                    crawler.do_step([[45, 45, -35], [0, 45, -50], [45, 0, -50], [45, 45, -50]], current_speed)
+                    crawler.do_step([[45, 0, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]], current_speed)
 
     except KeyboardInterrupt:
         print("\nShutting down server...")
