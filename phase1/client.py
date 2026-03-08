@@ -2,7 +2,7 @@ from pydualsense import pydualsense
 import socket
 from time import sleep
 
-HOST = '192.168.1.75' 
+HOST = '192.168.1.76' 
 PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,14 +26,18 @@ def main():
     ds.init()
     sleep(1) # Let the controller find its center
 
-    # --- THE SPY POSTURES (Face Buttons) ---
-    ds.triangle_pressed += lambda state: send_command("high_posture") if state else send_command("stand")
-    ds.cross_pressed += lambda state: send_command("stealth_mode") if state else send_command("stand")
-    ds.square_pressed += lambda state: send_command("strafe_left") if state else send_command("stand")
-    ds.circle_pressed += lambda state: send_command("strafe_right") if state else send_command("stand")
+    robot_state = {"move": "stop", "cam": "cam_stop"}
 
-    current_move = "stop"
-    current_cam = "cam_stop"
+    def handle_button_release():
+        # Only stand if we're not supposed to be moving
+        if robot_state["move"] == "stop":
+            send_command("stand")
+
+    # --- THE SPY POSTURES (Face Buttons) ---
+    ds.triangle_pressed += lambda state: send_command("high_posture") if state else handle_button_release()
+    ds.cross_pressed += lambda state: send_command("stealth_mode") if state else handle_button_release()
+    ds.square_pressed += lambda state: send_command("strafe_left") if state else handle_button_release()
+    ds.circle_pressed += lambda state: send_command("strafe_right") if state else handle_button_release()
 
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     
@@ -50,9 +54,9 @@ def main():
             elif lx < -50: new_move = "left"
             elif lx > 50: new_move = "right"
 
-            if new_move != current_move:
+            if new_move != robot_state["move"]:
                 send_command(new_move)
-                current_move = new_move
+                robot_state["move"] = new_move
             
             # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
             ry = ds.state.RY
@@ -64,9 +68,9 @@ def main():
             elif rx < -50: new_cam = "lean_left"
             elif rx > 50: new_cam = "lean_right"
 
-            if new_cam != current_cam:
+            if new_cam != robot_state["cam"]:
                 send_command(new_cam)
-                current_cam = new_cam
+                robot_state["cam"] = new_cam
             
             sleep(0.05) 
 
