@@ -41,10 +41,7 @@ def main():
     ds.square_pressed += lambda state: send_command("toggle_ghost") if state else None
     ds.circle_pressed += lambda state: send_command("toggle_sprint") if state else None
 
-    # --- THE TACTICAL BUMPERS ---
-    ds.l1_pressed += lambda state: send_command("tripwire") if state else handle_button_release()
-    ds.r1_pressed += lambda state: send_command("silent_mode") if state else handle_button_release()
-
+    # --- THE TACTICAL BUMPERS (Now polled in main loop) ---
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     
     try:
@@ -77,6 +74,25 @@ def main():
             if new_cam != robot_state["cam"]:
                 send_command(new_cam)
                 robot_state["cam"] = new_cam
+                
+            # --- BUMPERS (L1 / R1) ---
+            l1 = getattr(ds.state, 'L1', getattr(ds.state, 'l1', False))
+            r1 = getattr(ds.state, 'R1', getattr(ds.state, 'r1', False))
+            
+            new_action = "stand"
+            if r1:
+                new_action = "silent_mode"
+            elif l1:
+                new_action = "tripwire"
+            
+            # If we were doing an action and let go, we need to stand. 
+            # We track this using robot_state["special_action"]
+            if "special_action" not in robot_state:
+                robot_state["special_action"] = "stand"
+                
+            if new_action != robot_state["special_action"]:
+                send_command(new_action)
+                robot_state["special_action"] = new_action
                 
             # --- TRIGGERS (Speed Controls using Polling) ---
             # In pydualsense L2 and R2 go from 0 to 255.
