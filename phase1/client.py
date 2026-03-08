@@ -84,9 +84,9 @@ def main():
                 r2 = 0
             
             new_speed = "speed_normal"
-            if r2 > 10: 
+            if r2 > 0: 
                 new_speed = "speed_sprint"
-            elif l2 > 10: 
+            elif l2 > 0: 
                 new_speed = "speed_ghost"
                 
             if new_speed != robot_state["speed"]:
