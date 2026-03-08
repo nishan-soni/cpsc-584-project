@@ -26,6 +26,24 @@ def main():
     ds.init()
     sleep(1) # Let the controller find its center
 
+    # --- START RUMBLE LISTENER THREAD ---
+    def listen_for_rumble():
+        while True:
+            try:
+                data = client_socket.recv(1024).decode('utf-8')
+                if "RUMBLE" in data:
+                    print("🚨 ENEMY SPOTTED! RUMBLING THE CONTROLLER! 🚨")
+                    ds.setLeftMotor(255)  # Heavy rumble
+                    ds.setRightMotor(255) # Light rumble
+                    sleep(0.5)            # Rumble for half a second
+                    ds.setLeftMotor(0)
+                    ds.setRightMotor(0)
+            except Exception:
+                break
+                
+    import threading
+    threading.Thread(target=listen_for_rumble, daemon=True).start()
+
     robot_state = {"move": "stop", "cam": "cam_stop", "speed": "speed_normal"}
 
     def handle_button_release():

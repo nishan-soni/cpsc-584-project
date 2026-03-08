@@ -14,7 +14,13 @@ Vilib.camera_start(vflip=False, hflip=False, size=(1280, 720))
 Vilib.display(local=False, web=True)
 
 # --- START CAMERA HUD EFFECTS ---
-Vilib.face_detect_switch(True)   # Draw bounding boxes around faces
+import cv2
+original_putText = cv2.putText
+def custom_putText(img, text, org, fontFace, fontScale, color, thickness=1, lineType=cv2.LINE_8, bottomLeftOrigin=False):
+    if text == "red": text = "ENEMY"
+    return original_putText(img, text, org, fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin)
+cv2.putText = custom_putText
+
 Vilib.color_detect("red")        # Draw bounding boxes around red objects
 
 # --- START THE PHOTO GALLERY SERVER ---
@@ -58,6 +64,28 @@ def start_server():
             current_speed = 60
             is_recording = False
             current_video_name = None
+            
+            # --- START ENEMY DETECTION RUMBLE THREAD ---
+            def rumble_monitor():
+                import time
+                while True:
+                    try:
+                        # Check if Vilib sees any red objects
+                        enemies_spotted = 0
+                        
+                        if 'color_n' in Vilib.detect_obj_parameter:
+                            enemies_spotted += Vilib.detect_obj_parameter['color_n']
+                            
+                        if enemies_spotted > 0:
+                            client.sendall(b"RUMBLE\n")
+                            time.sleep(1.0) # Wait 1 second before rumbling again
+                        else:
+                            time.sleep(0.1) # Check again shortly
+                    except Exception:
+                        break # Exit thread if client disconnects or socket fails
+                        
+            import threading
+            threading.Thread(target=rumble_monitor, daemon=True).start()
             
             while True:
                 try:
