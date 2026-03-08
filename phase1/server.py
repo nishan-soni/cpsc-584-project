@@ -85,7 +85,8 @@ def start_server():
                             
                         # --- THE SPY POSTURES (Face Buttons) ---
                         elif command == 'high_posture':
-                            crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], current_speed)
+                            # Lift chassis to max physical height by straightening Alpha (0) and Beta (0) and Gamma (-90)
+                            crawler.do_step([[0,0,-90], [0,0,-90], [0,0,-90], [0,0,-90]], current_speed)
                         elif command == 'stealth_mode':
                             crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], current_speed)
                         elif command == 'strafe_left':
