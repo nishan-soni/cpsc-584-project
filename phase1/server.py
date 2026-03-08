@@ -102,7 +102,28 @@ def start_server():
                             if is_recording:
                                 Vilib.rec_video_stop()
                                 is_recording = False
-                                print(f"🛑 Video recording STOPPED. Saved to {Vilib.rec_video_set['path']}{current_video_name}.avi")
+                                
+                                avi_path = f"{Vilib.rec_video_set['path']}{current_video_name}.avi"
+                                mp4_path = f"{Vilib.rec_video_set['path']}{current_video_name}.mp4"
+                                print(f"🛑 Video recording STOPPED. Saved to {avi_path}")
+                                
+                                # Launch a background conversion so the robot doesn't freeze while processing!
+                                print(f"🔄 Converting {current_video_name}.avi into an MP4 so you can watch it in your browser...")
+                                def convert_video(avi, mp4):
+                                    import subprocess, os
+                                    try:
+                                        # Use ffmpeg to convert to H.264 mp4 which is universally supported by web browsers
+                                        subprocess.run(['ffmpeg', '-y', '-i', avi, '-vcodec', 'libx264', '-crf', '28', mp4], 
+                                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                        if os.path.exists(mp4):
+                                            print(f"🎬 Conversion complete! You can now click on {current_video_name}.mp4 in your browser!")
+                                            os.remove(avi) # Delete original to save SD card space
+                                    except FileNotFoundError:
+                                        print("⚠️ FFmpeg is not installed on the Raspberry Pi! Video will remain as .avi")
+                                        
+                                import threading
+                                threading.Thread(target=convert_video, args=(avi_path, mp4_path)).start()
+                                
                             else:
                                 from time import strftime, localtime
                                 current_video_name = strftime("%Y-%m-%d-%H.%M.%S", localtime())
