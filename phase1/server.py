@@ -21,6 +21,10 @@ VIDS_DIR = os.path.join(MEDIA_DIR, 'Videos')
 
 os.makedirs(PICS_DIR, exist_ok=True)
 os.makedirs(VIDS_DIR, exist_ok=True)
+
+# Important for Vilib: set the path exactly like the example script
+Vilib.rec_video_set["path"] = VIDS_DIR + "/"
+
 # Start a simple HTTP server in the media folder on port 8000
 http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], cwd=MEDIA_DIR)
 print(f"Photo Gallery live at: http://192.168.1.76:8000")
@@ -48,6 +52,7 @@ def start_server():
             current_move = 'stop'
             current_speed = 60
             is_recording = False
+            current_video_name = None
             
             while True:
                 try:
@@ -87,20 +92,25 @@ def start_server():
                             
                         # --- CAMERA CONTROLS (Face Buttons) ---
                         elif command == 'take_photo':
-                            Vilib.take_photo('spy_photo', PICS_DIR)
-                            print(f"📸 Photo taken! Saved to {PICS_DIR}")
+                            import time
+                            timestamp = int(time.time())
+                            file_name = f'spy_photo_{timestamp}'
+                            Vilib.take_photo(file_name, PICS_DIR)
+                            print(f"📸 Photo taken! Saved to {PICS_DIR}/{file_name}.jpg")
+                            
                         elif command == 'toggle_record':
                             if is_recording:
                                 Vilib.rec_video_stop()
                                 is_recording = False
-                                print("🛑 Video recording STOPPED.")
+                                print(f"🛑 Video recording STOPPED. Saved to {Vilib.rec_video_set['path']}{current_video_name}.avi")
                             else:
-                                # Vilib expects us to modify the existing dictionary, not replace it
-                                Vilib.rec_video_set["path"] = VIDS_DIR
-                                Vilib.rec_video_set["name"] = "spy_video"
+                                from time import strftime, localtime
+                                current_video_name = strftime("%Y-%m-%d-%H.%M.%S", localtime())
+                                Vilib.rec_video_set["name"] = current_video_name
+                                Vilib.rec_video_run()
                                 Vilib.rec_video_start()
                                 is_recording = True
-                                print(f"🎥 Video recording STARTED! Saving to {VIDS_DIR}")
+                                print(f"🎥 Video recording STARTED! Saving as {current_video_name}.avi in {VIDS_DIR}")
                             
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
