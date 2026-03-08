@@ -169,13 +169,21 @@ def start_server():
                                 
                         # --- THE D-PAD (Micro Movements) ---
                         elif command == 'step_forward':
+                            import time
                             crawler.do_action('forward', 1, current_speed)
+                            time.sleep(0.3)
                         elif command == 'step_back':
+                            import time
                             crawler.do_action('backward', 1, current_speed)
+                            time.sleep(0.3)
                         elif command == 'step_left':
-                            crawler.do_action('turn left', 1, current_speed)
+                            import time
+                            crawler.do_action('turn left angle', 1, current_speed)
+                            time.sleep(0.3)
                         elif command == 'step_right':
-                            crawler.do_action('turn right', 1, current_speed)
+                            import time
+                            crawler.do_action('turn right angle', 1, current_speed)
+                            time.sleep(0.3)
                             
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
