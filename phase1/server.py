@@ -35,6 +35,7 @@ os.makedirs(VIDS_DIR, exist_ok=True)
 
 # Important for Vilib: set the path exactly like the example script
 Vilib.rec_video_set["path"] = VIDS_DIR + "/"
+Vilib.rec_video_set["framesize"] = (1280, 720)
 
 # Start a simple HTTP server in the media folder on port 8000
 http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], cwd=MEDIA_DIR)
