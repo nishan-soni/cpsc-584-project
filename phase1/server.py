@@ -83,6 +83,14 @@ def start_server():
                         elif command == 'cam_stop':
                             crawler.do_action('stand', 1, current_speed)
                             
+                        # --- THE TACTICAL BUMPERS ---
+                        elif command == 'tripwire':
+                            # Flare all 4 legs fully outward (Y=90) and press into the ground (-90) for maximum grip
+                            crawler.do_step([[50,90,-90], [50,90,-90], [50,90,-90], [50,90,-90]], current_speed)
+                        elif command == 'silent_mode':
+                            # Drops flat to ground and kills servo power to remove motor hum
+                            crawler.do_step([[0,0,0], [0,0,0], [0,0,0], [0,0,0]], current_speed)
+                            
                         # --- THE SPY POSTURES (Face Buttons) ---
                         elif command == 'high_posture':
                             crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], current_speed)

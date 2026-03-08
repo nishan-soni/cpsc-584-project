@@ -41,6 +41,10 @@ def main():
     ds.square_pressed += lambda state: send_command("toggle_ghost") if state else None
     ds.circle_pressed += lambda state: send_command("toggle_sprint") if state else None
 
+    # --- THE TACTICAL BUMPERS ---
+    ds.l1_pressed += lambda state: send_command("tripwire") if state else handle_button_release()
+    ds.r1_pressed += lambda state: send_command("silent_mode") if state else handle_button_release()
+
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     
     try:
