@@ -55,7 +55,7 @@ def start_server():
                             continue
                             
                         # Update current movement state
-                        if command in ['forward', 'back', 'left', 'right', 'stop', 'strafe_left', 'strafe_right']:
+                        if command in ['forward', 'back', 'left', 'right', 'stop']:
                             current_move = command
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
@@ -76,8 +76,13 @@ def start_server():
                             crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], 80)
                         elif command == 'stealth_mode':
                             crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], 80)
+                        elif command == 'strafe_left':
+                            # Right legs push OUT (Y=90), Left legs pull IN (Y=10) -> Body shifts strictly left
+                            crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], 80)
+                        elif command == 'strafe_right':
+                            # Right legs pull IN (Y=10), Left legs push OUT (Y=90) -> Body shifts strictly right
+                            crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], 80)
                         elif command == 'stand':
-                            current_move = 'stop'
                             crawler.do_action('stand', 1, 80)
                             
                 except socket.timeout:
@@ -97,20 +102,6 @@ def start_server():
                     crawler.do_action('turn right', 1, 80)
                 elif current_move == 'left':
                     crawler.do_action('turn left', 1, 80)
-                elif current_move == 'strafe_left':
-                    # Phase 1: Lift RF & LR, move left. Body shifts left over grounded LF & RR.
-                    crawler.do_step([[50, 10, -30], [50, 10, -60], [50, 90, -30], [50, 90, -60]], 80)
-                    crawler.do_step([[50, 10, -60], [50, 10, -60], [50, 90, -60], [50, 90, -60]], 80)
-                    # Phase 3: Lift LF & RR, move left. Body shifts left over grounded RF & LR.
-                    crawler.do_step([[50, 90, -60], [50, 90, -30], [50, 10, -60], [50, 10, -30]], 80)
-                    crawler.do_step([[50, 90, -60], [50, 90, -60], [50, 10, -60], [50, 10, -60]], 80)
-                elif current_move == 'strafe_right':
-                    # Phase 1: Lift RF & LR, move right. Body shifts right over grounded LF & RR.
-                    crawler.do_step([[50, 90, -30], [50, 90, -60], [50, 10, -30], [50, 10, -60]], 80)
-                    crawler.do_step([[50, 90, -60], [50, 90, -60], [50, 10, -60], [50, 10, -60]], 80)
-                    # Phase 3: Lift LF & RR, move right. Body shifts right over grounded RF & LR.
-                    crawler.do_step([[50, 10, -60], [50, 10, -30], [50, 90, -60], [50, 90, -30]], 80)
-                    crawler.do_step([[50, 10, -60], [50, 10, -60], [50, 90, -60], [50, 90, -60]], 80)
 
     except KeyboardInterrupt:
         print("\nShutting down server...")
