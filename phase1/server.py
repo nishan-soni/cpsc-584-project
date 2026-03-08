@@ -86,11 +86,12 @@ def start_server():
                             print("📸 Photo taken! Saved to ./media/Pictures")
                         elif command == 'toggle_record':
                             if is_recording:
-                                Vilib.video_record_stop()
+                                Vilib.rec_video_stop()
                                 is_recording = False
                                 print("🛑 Video recording STOPPED.")
                             else:
-                                Vilib.video_record_start('spy_video', './media/Videos')
+                                Vilib.rec_video_set = {"path": "./media/Videos", "name": "spy_video"}
+                                Vilib.rec_video_start()
                                 is_recording = True
                                 print("🎥 Video recording STARTED! Saving to ./media/Videos")
                             
@@ -112,11 +113,7 @@ def start_server():
                         elif command == 'high_posture':
                             crawler.do_step([[50,50,-110], [50,50,-110], [50,50,-110], [50,50,-110]], current_speed)
                         elif command == 'stealth_mode':
-                            crawler.do_step([[80,80,-30], [80,80,-30], [80,80,-30], [80,80,-30]], current_speed)
-                        elif command == 'strafe_left':
-                            crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], current_speed)
-                        elif command == 'strafe_right':
-                            crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], current_speed)
+                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], current_speed)
                         elif command == 'stand':
                             crawler.do_action('stand', 1, current_speed)
                             
