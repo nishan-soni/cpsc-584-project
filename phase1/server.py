@@ -13,11 +13,11 @@ Vilib.camera_start(vflip=False, hflip=False)
 Vilib.display(local=False, web=True)
 
 # --- START THE PHOTO GALLERY SERVER ---
-# Ensure the Pictures folder exists
-os.makedirs('/home/pi/Pictures', exist_ok=True)
-os.makedirs('/home/pi/Videos', exist_ok=True)
-# Start a simple HTTP server in the Pictures folder on port 8000
-http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], cwd="/home/pi/Pictures")
+# Ensure the Pictures folder exists inside the project directory
+os.makedirs('./media/Pictures', exist_ok=True)
+os.makedirs('./media/Videos', exist_ok=True)
+# Start a simple HTTP server in the media folder on port 8000
+http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], cwd="./media")
 print("Photo Gallery live at: http://192.168.1.76:8000")
 
 # Define Server details
@@ -82,17 +82,17 @@ def start_server():
                             
                         # --- CAMERA CONTROLS (Face Buttons) ---
                         elif command == 'take_photo':
-                            Vilib.take_photo('spy_photo', '/home/pi/Pictures')
-                            print("📸 Photo taken! Saved to /home/pi/Pictures")
+                            Vilib.take_photo('spy_photo', './media/Pictures')
+                            print("📸 Photo taken! Saved to ./media/Pictures")
                         elif command == 'toggle_record':
                             if is_recording:
                                 Vilib.video_record_stop()
                                 is_recording = False
                                 print("🛑 Video recording STOPPED.")
                             else:
-                                Vilib.video_record_start('spy_video', '/home/pi/Videos')
+                                Vilib.video_record_start('spy_video', './media/Videos')
                                 is_recording = True
-                                print("🎥 Video recording STARTED! Saving to /home/pi/Videos")
+                                print("🎥 Video recording STARTED! Saving to ./media/Videos")
                             
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
