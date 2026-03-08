@@ -122,7 +122,7 @@ def start_server():
                                         print("⚠️ FFmpeg is not installed on the Raspberry Pi! Video will remain as .avi")
                                         
                                 import threading
-                                threading.Thread(target=convert_video, args=(avi_path, mp4_path)).start()
+                                threading.Thread(target=convert_video, args=(avi_path, mp4_path), daemon=True).start()
                                 
                             else:
                                 from time import strftime, localtime
@@ -176,6 +176,7 @@ def start_server():
     finally:
         server_socket.close()
         http_server.terminate()
+        Vilib.camera_close()
         print("Photo Gallery server stopped.")
 
 if __name__ == "__main__":
