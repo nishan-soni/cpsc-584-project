@@ -34,6 +34,13 @@ def start_server():
             
             while True:
                 try:
+                    # If we are supposed to be moving, minimize the timeout to avoid movement stutter
+                    # Otherwise, block briefly to avoid high CPU usage
+                    if current_move == 'stop':
+                        client.settimeout(0.1)
+                    else:
+                        client.settimeout(0.001)
+
                     data = client.recv(1024)
                     if not data:
                         break # Client disconnected
