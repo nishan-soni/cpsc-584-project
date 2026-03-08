@@ -69,7 +69,15 @@ def main():
             lx = ds.state.LX
             
             new_move = "stop"
-            if ds.state.L1: new_move = "strafe_left"
+            
+            # --- D-PAD (Micro Movements) ---
+            if ds.state.DpadUp: new_move = "step_forward"
+            elif ds.state.DpadDown: new_move = "step_back"
+            elif ds.state.DpadLeft: new_move = "step_left"
+            elif ds.state.DpadRight: new_move = "step_right"
+            
+            # --- LEFT JOYSTICK (Continuous Movement) ---
+            elif ds.state.L1: new_move = "strafe_left"
             elif ds.state.R1: new_move = "strafe_right"
             elif ly < -50: new_move = "forward"
             elif ly > 50: new_move = "back"
