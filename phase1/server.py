@@ -31,7 +31,7 @@ def start_server():
             client.settimeout(0.1)  # Allow socket to timeout so robot can keep moving
             buffer = ""
             current_move = 'stop'
-            current_speed = 80
+            current_speed = 60
             
             while True:
                 try:
@@ -61,10 +61,13 @@ def start_server():
                         # --- SPEED CONTROLS (Triggers) ---
                         elif command == 'speed_sprint':
                             current_speed = 100
+                            print(f"🏎️ SPRINT MODE ENGAGED (Speed: {current_speed})")
                         elif command == 'speed_ghost':
-                            current_speed = 40
+                            current_speed = 20
+                            print(f"👻 GHOST MODE ENGAGED (Speed: {current_speed})")
                         elif command == 'speed_normal':
-                            current_speed = 80
+                            current_speed = 60
+                            print(f"🚶 NORMAL SPEED (Speed: {current_speed})")
                             
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':

@@ -83,6 +83,7 @@ def main():
                 new_speed = "speed_ghost"
                 
             if new_speed != robot_state["speed"]:
+                print(f"🎮 Trigger changed! L2: {l2}, R2: {r2} -> Sending: {new_speed}")
                 send_command(new_speed)
                 robot_state["speed"] = new_speed
             
