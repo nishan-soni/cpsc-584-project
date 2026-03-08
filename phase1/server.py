@@ -31,6 +31,7 @@ def start_server():
             client.settimeout(0.1)  # Allow socket to timeout so robot can keep moving
             buffer = ""
             current_move = 'stop'
+            current_speed = 80
             
             while True:
                 try:
@@ -57,33 +58,41 @@ def start_server():
                         # Update current movement state
                         if command in ['forward', 'back', 'left', 'right', 'stop']:
                             current_move = command
+                        # --- SPEED CONTROLS (Triggers) ---
+                        elif command == 'speed_sprint':
+                            current_speed = 100
+                        elif command == 'speed_ghost':
+                            current_speed = 40
+                        elif command == 'speed_normal':
+                            current_speed = 80
+                            
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
                             # Front legs straight (-90), back legs crouched (-30)
-                            crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-30], [50,50,-30]], 80)
+                            crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-30], [50,50,-30]], current_speed)
                         elif command == 'look_down':
                             # Front legs crouched (-30), back legs straight (-90)
-                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-90], [50,50,-90]], 80)
+                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-90], [50,50,-90]], current_speed)
                         elif command == 'lean_left':
-                            crawler.do_step([[50,50,-90], [50,50,-30], [50,50,-30], [50,50,-90]], 80)
+                            crawler.do_step([[50,50,-90], [50,50,-30], [50,50,-30], [50,50,-90]], current_speed)
                         elif command == 'lean_right':
-                            crawler.do_step([[50,50,-30], [50,50,-90], [50,50,-90], [50,50,-30]], 80)
+                            crawler.do_step([[50,50,-30], [50,50,-90], [50,50,-90], [50,50,-30]], current_speed)
                         elif command == 'cam_stop':
-                            crawler.do_action('stand', 1, 80)
+                            crawler.do_action('stand', 1, current_speed)
                             
                         # --- THE SPY POSTURES (Face Buttons) ---
                         elif command == 'high_posture':
-                            crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], 80)
+                            crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], current_speed)
                         elif command == 'stealth_mode':
-                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], 80)
+                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], current_speed)
                         elif command == 'strafe_left':
                             # Right legs push OUT (Y=90), Left legs pull IN (Y=10) -> Body shifts strictly left
-                            crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], 80)
+                            crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], current_speed)
                         elif command == 'strafe_right':
                             # Right legs pull IN (Y=10), Left legs push OUT (Y=90) -> Body shifts strictly right
-                            crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], 80)
+                            crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], current_speed)
                         elif command == 'stand':
-                            crawler.do_action('stand', 1, 80)
+                            crawler.do_action('stand', 1, current_speed)
                             
                 except socket.timeout:
                     # Timeout reached, meaning we haven't received a new command, 
@@ -95,13 +104,13 @@ def start_server():
                 
                 # Execute continuous movement
                 if current_move == 'forward':
-                    crawler.do_action('forward', 1, 80)
+                    crawler.do_action('forward', 1, current_speed)
                 elif current_move == 'back':
-                    crawler.do_action('backward', 1, 80)
+                    crawler.do_action('backward', 1, current_speed)
                 elif current_move == 'right':
-                    crawler.do_action('turn right', 1, 80)
+                    crawler.do_action('turn right', 1, current_speed)
                 elif current_move == 'left':
-                    crawler.do_action('turn left', 1, 80)
+                    crawler.do_action('turn left', 1, current_speed)
 
     except KeyboardInterrupt:
         print("\nShutting down server...")

@@ -26,7 +26,7 @@ def main():
     ds.init()
     sleep(1) # Let the controller find its center
 
-    robot_state = {"move": "stop", "cam": "cam_stop"}
+    robot_state = {"move": "stop", "cam": "cam_stop", "speed": "speed_normal"}
 
     def handle_button_release():
         # Only stand if we're not supposed to be moving
@@ -71,6 +71,20 @@ def main():
             if new_cam != robot_state["cam"]:
                 send_command(new_cam)
                 robot_state["cam"] = new_cam
+                
+            # --- TRIGGERS (Speed Controls) ---
+            l2 = ds.state.L2
+            r2 = ds.state.R2
+            
+            new_speed = "speed_normal"
+            if r2 > 10: 
+                new_speed = "speed_sprint"
+            elif l2 > 10: 
+                new_speed = "speed_ghost"
+                
+            if new_speed != robot_state["speed"]:
+                send_command(new_speed)
+                robot_state["speed"] = new_speed
             
             sleep(0.05) 
 
