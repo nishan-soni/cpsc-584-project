@@ -9,8 +9,13 @@ import os
 crawler = Picrawler()           
 
 # --- START THE LIVE VIDEO FEED ---
-Vilib.camera_start(vflip=False, hflip=False)
+# Increased resolution to 720p HD (1280x720) to fill more of the screen!
+Vilib.camera_start(vflip=False, hflip=False, size=(1280, 720))
 Vilib.display(local=False, web=True)
+
+# --- START CAMERA HUD EFFECTS ---
+Vilib.face_detect_switch(True)   # Draw bounding boxes around faces
+Vilib.color_detect("red")        # Draw bounding boxes around red objects
 
 # --- START THE PHOTO GALLERY SERVER ---
 # Ensure the media folders exist inside the project directory using absolute paths
