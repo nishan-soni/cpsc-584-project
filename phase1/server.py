@@ -151,7 +151,7 @@ def start_server():
                         elif command == 'high_posture':
                             crawler.do_step([[50,50,-110], [50,50,-110], [50,50,-110], [50,50,-110]], current_speed)
                         elif command == 'stealth_mode':
-                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], current_speed)
+                            crawler.do_step([[0,0,0], [0,0,0], [0,0,0], [0,0,0]], current_speed)
                         elif command == 'stand':
                             crawler.do_action('stand', 1, current_speed)
                             
