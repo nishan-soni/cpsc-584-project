@@ -93,17 +93,18 @@ def start_server():
                             
                         # --- THE SPY POSTURES (Face Buttons) ---
                         elif command == 'high_posture':
-                            crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-90], [50,50,-90]], current_speed)
+                            z_height = -110
+                            crawler.do_step([[50,50,z_height], [50,50,z_height], [50,50,z_height], [50,50,z_height]], current_speed)
                         elif command == 'stealth_mode':
-                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], current_speed)
+                            z_height = -20
+                            crawler.do_step([[50,50,z_height], [50,50,z_height], [50,50,z_height], [50,50,z_height]], current_speed)
                         elif command == 'strafe_left':
-                            # Right legs push OUT (Y=90), Left legs pull IN (Y=10) -> Body shifts strictly left
-                            crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], current_speed)
+                            crawler.do_step([[50,90,z_height], [50,10,z_height], [50,10,z_height], [50,90,z_height]], current_speed)
                         elif command == 'strafe_right':
-                            # Right legs pull IN (Y=10), Left legs push OUT (Y=90) -> Body shifts strictly right
-                            crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], current_speed)
+                            crawler.do_step([[50,10,z_height], [50,90,z_height], [50,90,z_height], [50,10,z_height]], current_speed)
                         elif command == 'stand':
-                            crawler.do_action('stand', 1, current_speed)
+                            z_height = -60
+                            crawler.do_step([[50,50,z_height], [50,50,z_height], [50,50,z_height], [50,50,z_height]], current_speed)
                             
                 except socket.timeout:
                     # Timeout reached, meaning we haven't received a new command, 
@@ -115,11 +116,14 @@ def start_server():
                 
                 # Execute continuous movement
                 if current_move == 'forward':
-                    crawler.do_action('forward', 1, current_speed)
+                    # Custom walking gait that uses our current z_height instead of the default do_action
+                    crawler.do_step([[50,50,z_height], [50,0,z_height], [50,50,z_height], [50,0,z_height]], current_speed)
+                    crawler.do_step([[50,100,z_height], [50,50,z_height], [50,100,z_height], [50,50,z_height]], current_speed)
                 elif current_move == 'back':
-                    crawler.do_action('backward', 1, current_speed)
+                    crawler.do_step([[50,100,z_height], [50,50,z_height], [50,100,z_height], [50,50,z_height]], current_speed)
+                    crawler.do_step([[50,50,z_height], [50,0,z_height], [50,50,z_height], [50,0,z_height]], current_speed)
                 elif current_move == 'right':
-                    crawler.do_action('turn right', 1, current_speed)
+                    crawler.do_action('turn right', 1, current_speed) # Turning is complex, leave default for now
                 elif current_move == 'left':
                     crawler.do_action('turn left', 1, current_speed)
 
