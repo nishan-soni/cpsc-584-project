@@ -205,9 +205,39 @@ def start_server():
                 elif current_move == 'left':
                     crawler.do_action('turn left', 1, current_speed)
                 elif current_move == 'strafe_left':
-                    crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], current_speed)
+                    import time
+                    # Experimental 4-step Crab Walk Left
+                    # Stand is: [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]] [RF, LF, LR, RR]
+                    cx = 45 # Default X
+                    # Step 1: Lift left legs (-30 Z) and reach left (Y from 0 to -15)
+                    crawler.do_step([[cx, 45, -50], [cx, -15, -30], [cx, -15, -30], [cx, 45, -50]], current_speed)
+                    time.sleep(0.15)
+                    # Step 2: Plant left legs down (-50 Z)
+                    crawler.do_step([[cx, 45, -50], [cx, -15, -50], [cx, -15, -50], [cx, 45, -50]], current_speed)
+                    time.sleep(0.15)
+                    # Step 3: Lift right legs (-30 Z) and step left (Y from 45 to 60)
+                    crawler.do_step([[cx, 60, -30], [cx, 0, -50], [cx, 0, -50], [cx, 60, -30]], current_speed)
+                    time.sleep(0.15)
+                    # Step 4: Plant right legs down, pull body over, and reset to standard stand centering!
+                    crawler.do_step([[cx, 45, -50], [cx, 0, -50], [cx, 0, -50], [cx, 45, -50]], current_speed)
+                    time.sleep(0.15)
+
                 elif current_move == 'strafe_right':
-                    crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], current_speed)
+                    import time
+                    # Experimental 4-step Crab Walk Right
+                    cx = 45
+                    # Step 1: Lift right legs and reach right (Y from 45 to 60)
+                    crawler.do_step([[cx, 60, -30], [cx, 0, -50], [cx, 0, -50], [cx, 60, -30]], current_speed)
+                    time.sleep(0.15)
+                    # Step 2: Plant right legs down
+                    crawler.do_step([[cx, 60, -50], [cx, 0, -50], [cx, 0, -50], [cx, 60, -50]], current_speed)
+                    time.sleep(0.15)
+                    # Step 3: Lift left legs and step right (Y from 0 to 15)
+                    crawler.do_step([[cx, 45, -50], [cx, 15, -30], [cx, 15, -30], [cx, 45, -50]], current_speed)
+                    time.sleep(0.15)
+                    # Step 4: Reset and Center
+                    crawler.do_step([[cx, 45, -50], [cx, 0, -50], [cx, 0, -50], [cx, 45, -50]], current_speed)
+                    time.sleep(0.15)
 
     except KeyboardInterrupt:
         print("\nShutting down server...")
