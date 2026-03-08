@@ -84,15 +84,18 @@ def main():
                 r2 = 0
             
             new_speed = "speed_normal"
-            if r2 > 150: 
+            if r2 > 10: 
                 new_speed = "speed_sprint"
-            elif l2 > 150: 
+            elif l2 > 10: 
                 new_speed = "speed_ghost"
                 
             if new_speed != robot_state["speed"]:
-                print(f"🎮 Trigger changed! L2: {l2}, R2: {r2} -> Sending: {new_speed}")
+                print(f"\n🎮 Trigger changed! L2: {l2}, R2: {r2} -> Sending: {new_speed}")
                 send_command(new_speed)
                 robot_state["speed"] = new_speed
+                
+            # Real-time debug print of all axes
+            print(f"DEBUG | LX:{lx:^4} LY:{ly:^4} | RX:{rx:^4} RY:{ry:^4} | L2:{l2:^3} R2:{r2:^3}   ", end="\r")
             
             sleep(0.05) 
 
