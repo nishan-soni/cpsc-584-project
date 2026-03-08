@@ -40,34 +40,6 @@ def main():
     # Send toggle command ONLY when the button is pressed down (state == True)
     ds.square_pressed += lambda state: send_command("toggle_ghost") if state else None
     ds.circle_pressed += lambda state: send_command("toggle_sprint") if state else None
-    
-    # --- TRIGGERS (Speed Controls using Events) ---
-    def handle_l2(state):
-        if state > 10:
-            if robot_state["speed"] != "speed_ghost":
-                print(f"🎮 L2 pressed ({state}) -> Sending: speed_ghost")
-                send_command("speed_ghost")
-                robot_state["speed"] = "speed_ghost"
-        else:
-            if robot_state["speed"] != "speed_normal":
-                print("🎮 L2 released -> Sending: speed_normal")
-                send_command("speed_normal")
-                robot_state["speed"] = "speed_normal"
-                
-    def handle_r2(state):
-        if state > 10:
-            if robot_state["speed"] != "speed_sprint":
-                print(f"🎮 R2 pressed ({state}) -> Sending: speed_sprint")
-                send_command("speed_sprint")
-                robot_state["speed"] = "speed_sprint"
-        else:
-            if robot_state["speed"] != "speed_normal":
-                print("🎮 R2 released -> Sending: speed_normal")
-                send_command("speed_normal")
-                robot_state["speed"] = "speed_normal"
-
-    ds.l2_changed += handle_l2
-    ds.r2_changed += handle_r2
 
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     
@@ -101,6 +73,26 @@ def main():
             if new_cam != robot_state["cam"]:
                 send_command(new_cam)
                 robot_state["cam"] = new_cam
+                
+            # --- TRIGGERS (Speed Controls using Polling) ---
+            # In pydualsense L2 and R2 go from 0 to 255.
+            try:
+                l2 = getattr(ds.state, 'L2', 0)
+                r2 = getattr(ds.state, 'R2', 0)
+            except Exception:
+                l2 = 0
+                r2 = 0
+            
+            new_speed = "speed_normal"
+            if r2 > 150: 
+                new_speed = "speed_sprint"
+            elif l2 > 150: 
+                new_speed = "speed_ghost"
+                
+            if new_speed != robot_state["speed"]:
+                print(f"🎮 Trigger changed! L2: {l2}, R2: {r2} -> Sending: {new_speed}")
+                send_command(new_speed)
+                robot_state["speed"] = new_speed
             
             sleep(0.05) 
 
