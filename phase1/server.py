@@ -111,7 +111,7 @@ def start_server():
                             continue
                             
                         # Update current movement state
-                        if command in ['forward', 'back', 'left', 'right', 'stop']:
+                        if command in ['forward', 'back', 'left', 'right', 'strafe_left', 'strafe_right', 'stop']:
                             current_move = command
                         # --- SPEED CONTROLS (Triggers) ---
                         elif command == 'speed_sprint':
@@ -204,6 +204,10 @@ def start_server():
                     crawler.do_action('turn right', 1, current_speed)
                 elif current_move == 'left':
                     crawler.do_action('turn left', 1, current_speed)
+                elif current_move == 'strafe_left':
+                    crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], current_speed)
+                elif current_move == 'strafe_right':
+                    crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], current_speed)
 
     except KeyboardInterrupt:
         print("\nShutting down server...")

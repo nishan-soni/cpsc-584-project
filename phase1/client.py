@@ -69,7 +69,9 @@ def main():
             lx = ds.state.LX
             
             new_move = "stop"
-            if ly < -50: new_move = "forward"
+            if ds.state.L1: new_move = "strafe_left"
+            elif ds.state.R1: new_move = "strafe_right"
+            elif ly < -50: new_move = "forward"
             elif ly > 50: new_move = "back"
             elif lx < -50: new_move = "left"
             elif lx > 50: new_move = "right"
