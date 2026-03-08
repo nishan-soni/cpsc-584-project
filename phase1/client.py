@@ -33,13 +33,13 @@ def main():
         if robot_state["move"] == "stop":
             send_command("stand")
 
-    # --- THE SPY POSTURES & SPEED TOGGLES (Face Buttons) ---
+    # --- THE SPY POSTURES & CAMERA (Face Buttons) ---
     ds.triangle_pressed += lambda state: send_command("high_posture") if state else handle_button_release()
     ds.cross_pressed += lambda state: send_command("stealth_mode") if state else handle_button_release()
     
-    # Send toggle command ONLY when the button is pressed down (state == True)
-    ds.square_pressed += lambda state: send_command("toggle_ghost") if state else None
-    ds.circle_pressed += lambda state: send_command("toggle_sprint") if state else None
+    # Send camera commands ONLY when the button is pressed down (state == True)
+    ds.square_pressed += lambda state: send_command("take_photo") if state else None
+    ds.circle_pressed += lambda state: send_command("toggle_record") if state else None
 
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     

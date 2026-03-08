@@ -2,6 +2,8 @@ import socket
 from picrawler import Picrawler 
 from time import sleep
 from vilib import Vilib
+import subprocess
+import os
 
 # Initialize your PiCrawler
 crawler = Picrawler()           
@@ -9,6 +11,14 @@ crawler = Picrawler()
 # --- START THE LIVE VIDEO FEED ---
 Vilib.camera_start(vflip=False, hflip=False)
 Vilib.display(local=False, web=True)
+
+# --- START THE PHOTO GALLERY SERVER ---
+# Ensure the Pictures folder exists
+os.makedirs('/home/pi/Pictures', exist_ok=True)
+os.makedirs('/home/pi/Videos', exist_ok=True)
+# Start a simple HTTP server in the Pictures folder on port 8000
+http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], cwd="/home/pi/Pictures")
+print("Photo Gallery live at: http://192.168.1.76:8000")
 
 # Define Server details
 HOST = '0.0.0.0'
@@ -32,6 +42,7 @@ def start_server():
             buffer = ""
             current_move = 'stop'
             current_speed = 60
+            is_recording = False
             
             while True:
                 try:
@@ -69,6 +80,20 @@ def start_server():
                             current_speed = 60
                             print(f"🚶 NORMAL SPEED (Speed: {current_speed})")
                             
+                        # --- CAMERA CONTROLS (Face Buttons) ---
+                        elif command == 'take_photo':
+                            Vilib.take_photo('spy_photo', '/home/pi/Pictures')
+                            print("📸 Photo taken! Saved to /home/pi/Pictures")
+                        elif command == 'toggle_record':
+                            if is_recording:
+                                Vilib.video_record_stop()
+                                is_recording = False
+                                print("🛑 Video recording STOPPED.")
+                            else:
+                                Vilib.video_record_start('spy_video', '/home/pi/Videos')
+                                is_recording = True
+                                print("🎥 Video recording STARTED! Saving to /home/pi/Videos")
+                            
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
                             # Front legs straight (-90), back legs crouched (-30)
@@ -85,22 +110,17 @@ def start_server():
                             
                         # --- THE SPY POSTURES (Face Buttons) ---
                         elif command == 'high_posture':
-                            # Custom high posture requested by user
                             crawler.do_step([[50,50,-110], [50,50,-110], [50,50,-110], [50,50,-110]], current_speed)
                         elif command == 'stealth_mode':
-                            crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-30], [50,50,-30]], current_speed)
+                            crawler.do_step([[80,80,-30], [80,80,-30], [80,80,-30], [80,80,-30]], current_speed)
                         elif command == 'strafe_left':
-                            # Right legs push OUT (Y=90), Left legs pull IN (Y=10) -> Body shifts strictly left
                             crawler.do_step([[50,90,-60], [50,10,-60], [50,10,-60], [50,90,-60]], current_speed)
                         elif command == 'strafe_right':
-                            # Right legs pull IN (Y=10), Left legs push OUT (Y=90) -> Body shifts strictly right
                             crawler.do_step([[50,10,-60], [50,90,-60], [50,90,-60], [50,10,-60]], current_speed)
                         elif command == 'stand':
                             crawler.do_action('stand', 1, current_speed)
                             
                 except socket.timeout:
-                    # Timeout reached, meaning we haven't received a new command, 
-                    # keep repeating the continuous movement
                     pass
                 except ConnectionResetError:
                     print("Connection lost unexpectedly.")
@@ -120,6 +140,8 @@ def start_server():
         print("\nShutting down server...")
     finally:
         server_socket.close()
+        http_server.terminate()
+        print("Photo Gallery server stopped.")
 
 if __name__ == "__main__":
     start_server()
