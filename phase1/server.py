@@ -33,7 +33,7 @@ os.makedirs(VIDS_DIR, exist_ok=True)
 
 Vilib.rec_video_set["path"] = VIDS_DIR + "/"
 Vilib.rec_video_set["framesize"] = (1280, 720)
-Vilib.rec_video_set["fps"] = 10.0 # Match the Pi's real-time 720p capture rate
+Vilib.rec_video_set["fps"] = 10.0 
 
 
 # Start a simple HTTP server in the media folder on port 8000
