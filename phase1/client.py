@@ -2,7 +2,7 @@ from pydualsense import pydualsense
 import socket
 from time import sleep
 
-HOST = '192.168.1.76' 
+HOST = '172.17.10.193' 
 PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
