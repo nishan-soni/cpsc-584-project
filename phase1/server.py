@@ -33,7 +33,7 @@ os.makedirs(VIDS_DIR, exist_ok=True)
 
 Vilib.rec_video_set["path"] = VIDS_DIR + "/"
 Vilib.rec_video_set["framesize"] = (1280, 720)
-Vilib.rec_video_set["fps"] = 10.0 
+Vilib.rec_video_set["fps"] = 24.0 
 
 
 # Start a simple HTTP server in the media folder on port 8000
