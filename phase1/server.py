@@ -9,7 +9,7 @@ import os
 crawler = Picrawler()           
 
 # --- START THE LIVE VIDEO FEED ---
-Vilib.camera_start(vflip=False, hflip=False, size=(1280, 720))
+Vilib.camera_start(vflip=False, hflip=False, size=(640, 480))
 Vilib.display(local=False, web=True)
 
 # --- START CAMERA HUD EFFECTS ---
@@ -32,7 +32,7 @@ os.makedirs(PICS_DIR, exist_ok=True)
 os.makedirs(VIDS_DIR, exist_ok=True)
 
 Vilib.rec_video_set["path"] = VIDS_DIR + "/"
-Vilib.rec_video_set["framesize"] = (1280, 720)
+Vilib.rec_video_set["framesize"] = (640, 480)
 Vilib.rec_video_set["fps"] = 24.0 
 
 
@@ -54,10 +54,15 @@ def start_server():
     print(f"PiCrawler Server listening on port {PORT}...")
     print("Spy Camera Feed live at: http://192.168.1.76:9000/mjpg")
 
+    server_socket.settimeout(1.0) # Allow interrupt to break the server wait loop
+
     try:
         while True:
-            client, addr = server_socket.accept()
-            print(f"Connected to Controller at {addr}")
+            try:
+                client, addr = server_socket.accept()
+                print(f"Connected to Controller at {addr}")
+            except socket.timeout:
+                continue # Check for KeyboardInterrupt and try again
             
             client.settimeout(0.1)  
             buffer = ""
@@ -203,8 +208,11 @@ def start_server():
     finally:
         server_socket.close()
         http_server.terminate()
-        Vilib.camera_close()
         print("Photo Gallery server stopped.")
+        try:
+            Vilib.camera_close()
+        except:
+            pass
 
 if __name__ == "__main__":
     start_server()
