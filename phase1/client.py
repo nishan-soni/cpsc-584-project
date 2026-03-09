@@ -24,7 +24,7 @@ def send_command(cmd):
 def main():
     ds = pydualsense()
     ds.init()
-    sleep(1) # Let the controller find its center
+    sleep(1)
 
     # --- START RUMBLE LISTENER THREAD ---
     def listen_for_rumble():
@@ -33,9 +33,9 @@ def main():
                 data = client_socket.recv(1024).decode('utf-8')
                 if "RUMBLE" in data:
                     print("🚨 ENEMY SPOTTED! RUMBLING THE CONTROLLER! 🚨")
-                    ds.setLeftMotor(255)  # Heavy rumble
-                    ds.setRightMotor(255) # Light rumble
-                    sleep(0.5)            # Rumble for half a second
+                    ds.setLeftMotor(255)  
+                    ds.setRightMotor(255) 
+                    sleep(0.5)  
                     ds.setLeftMotor(0)
                     ds.setRightMotor(0)
             except Exception:
@@ -47,7 +47,6 @@ def main():
     robot_state = {"move": "stop", "cam": "cam_stop", "speed": "speed_normal"}
 
     def handle_button_release():
-        # Only stand if we're not supposed to be moving
         if robot_state["move"] == "stop":
             send_command("stand")
 

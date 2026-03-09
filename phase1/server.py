@@ -5,11 +5,10 @@ from vilib import Vilib
 import subprocess
 import os
 
-# Initialize your PiCrawler
+# Initialize PiCrawler
 crawler = Picrawler()           
 
 # --- START THE LIVE VIDEO FEED ---
-# Increased resolution to 720p HD (1280x720) to fill more of the screen!
 Vilib.camera_start(vflip=False, hflip=False, size=(1280, 720))
 Vilib.display(local=False, web=True)
 
@@ -21,10 +20,9 @@ def custom_putText(img, text, org, fontFace, fontScale, color, thickness=1, line
     return original_putText(img, text, org, fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin)
 cv2.putText = custom_putText
 
-Vilib.color_detect("red")        # Draw bounding boxes around red objects
+Vilib.color_detect("red")  
 
 # --- START THE PHOTO GALLERY SERVER ---
-# Ensure the media folders exist inside the project directory using absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 PICS_DIR = os.path.join(MEDIA_DIR, 'Pictures')
@@ -33,7 +31,6 @@ VIDS_DIR = os.path.join(MEDIA_DIR, 'Videos')
 os.makedirs(PICS_DIR, exist_ok=True)
 os.makedirs(VIDS_DIR, exist_ok=True)
 
-# Important for Vilib: set the path exactly like the example script
 Vilib.rec_video_set["path"] = VIDS_DIR + "/"
 Vilib.rec_video_set["framesize"] = (1280, 720)
 
@@ -59,7 +56,7 @@ def start_server():
             client, addr = server_socket.accept()
             print(f"Connected to Controller at {addr}")
             
-            client.settimeout(0.1)  # Allow socket to timeout so robot can keep moving
+            client.settimeout(0.1)  
             buffer = ""
             current_move = 'stop'
             current_speed = 60
@@ -71,7 +68,6 @@ def start_server():
                 import time
                 while True:
                     try:
-                        # Check if Vilib sees any red objects
                         enemies_spotted = 0
                         
                         if 'color_n' in Vilib.detect_obj_parameter:
@@ -79,19 +75,17 @@ def start_server():
                             
                         if enemies_spotted > 0:
                             client.sendall(b"RUMBLE\n")
-                            time.sleep(1.0) # Wait 1 second before rumbling again
+                            time.sleep(1.0) 
                         else:
-                            time.sleep(0.1) # Check again shortly
+                            time.sleep(0.1) 
                     except Exception:
-                        break # Exit thread if client disconnects or socket fails
-                        
+                        break 
+
             import threading
             threading.Thread(target=rumble_monitor, daemon=True).start()
             
             while True:
                 try:
-                    # If we are supposed to be moving, minimize the timeout to avoid movement stutter
-                    # Otherwise, block briefly to avoid high CPU usage
                     if current_move == 'stop':
                         client.settimeout(0.1)
                     else:
@@ -99,7 +93,7 @@ def start_server():
 
                     data = client.recv(1024)
                     if not data:
-                        break # Client disconnected
+                        break 
                     
                     buffer += data.decode('utf-8')
                     
@@ -110,7 +104,6 @@ def start_server():
                         if not command:
                             continue
                             
-                        # Update current movement state
                         if command in ['forward', 'back', 'left', 'right', 'strafe_left', 'strafe_right', 'stop']:
                             current_move = command
                         # --- SPEED CONTROLS (Triggers) ---
@@ -141,17 +134,16 @@ def start_server():
                                 mp4_path = f"{Vilib.rec_video_set['path']}{current_video_name}.mp4"
                                 print(f"🛑 Video recording STOPPED. Saved to {avi_path}")
                                 
-                                # Launch a background conversion so the robot doesn't freeze while processing!
+                                # Background conversion so the robot doesn't freeze while processing!
                                 print(f"🔄 Converting {current_video_name}.avi into an MP4 so you can watch it in your browser...")
                                 def convert_video(avi, mp4):
                                     import subprocess, os
                                     try:
-                                        # Use ffmpeg to convert to H.264 mp4 which is universally supported by web browsers
                                         subprocess.run(['ffmpeg', '-y', '-i', avi, '-vcodec', 'libx264', '-crf', '28', mp4], 
                                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                                         if os.path.exists(mp4):
                                             print(f"🎬 Conversion complete! You can now click on {current_video_name}.mp4 in your browser!")
-                                            os.remove(avi) # Delete original to save SD card space
+                                            os.remove(avi)
                                     except FileNotFoundError:
                                         print("⚠️ FFmpeg is not installed on the Raspberry Pi! Video will remain as .avi")
                                         
@@ -169,10 +161,8 @@ def start_server():
                             
                         # --- RIGHT JOYSTICK (Body Lean / Camera Tilt) ---
                         elif command == 'look_up':
-                            # Front legs straight (-90), back legs crouched (-30)
                             crawler.do_step([[50,50,-90], [50,50,-90], [50,50,-30], [50,50,-30]], current_speed)
                         elif command == 'look_down':
-                            # Front legs crouched (-30), back legs straight (-90)
                             crawler.do_step([[50,50,-30], [50,50,-30], [50,50,-90], [50,50,-90]], current_speed)
                         elif command == 'lean_left':
                             crawler.do_step([[50,50,-90], [50,50,-30], [50,50,-30], [50,50,-90]], current_speed)
