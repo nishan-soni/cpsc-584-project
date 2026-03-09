@@ -33,9 +33,12 @@ os.makedirs(VIDS_DIR, exist_ok=True)
 
 Vilib.rec_video_set["path"] = VIDS_DIR + "/"
 Vilib.rec_video_set["framesize"] = (1280, 720)
+Vilib.rec_video_set["fps"] = 10.0 # Match the Pi's real-time 720p capture rate
+
 
 # Start a simple HTTP server in the media folder on port 8000
-http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], cwd=MEDIA_DIR)
+http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"], 
+                               cwd=MEDIA_DIR, stderr=subprocess.DEVNULL)
 print(f"Photo Gallery live at: http://192.168.1.76:8000")
 
 # Define Server details
