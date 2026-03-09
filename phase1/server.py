@@ -104,7 +104,7 @@ def start_server():
                         if not command:
                             continue
                             
-                        if command in ['forward', 'back', 'left', 'right', 'strafe_left', 'strafe_right', 'stop']:
+                        if command in ['forward', 'back', 'left', 'right', 'stop']:
                             current_move = command
                         # --- SPEED CONTROLS (Triggers) ---
                         elif command == 'speed_sprint':
@@ -194,16 +194,6 @@ def start_server():
                     crawler.do_action('turn right', 1, current_speed)
                 elif current_move == 'left':
                     crawler.do_action('turn left', 1, current_speed)
-                elif current_move == 'strafe_left':
-                    # Look Left (Tactical Peek)
-                    crawler.do_step([[45, 0, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]], current_speed)
-                    crawler.do_step([[0, 45, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]], current_speed)
-                    crawler.do_step([[0, 45, -50], [45, 45, -35], [45, 45, -50], [45, 0, -50]], current_speed)
-                elif current_move == 'strafe_right':
-                    # Look Right (Tactical Peek)
-                    crawler.do_step([[45, 45, -50], [0, 45, -50], [45, 0, -50], [45, 45, -50]], current_speed)
-                    crawler.do_step([[45, 45, -35], [0, 45, -50], [45, 0, -50], [45, 45, -50]], current_speed)
-                    crawler.do_step([[45, 0, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]], current_speed)
 
     except KeyboardInterrupt:
         print("\nShutting down server...")
