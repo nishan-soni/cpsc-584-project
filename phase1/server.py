@@ -5,7 +5,7 @@ from vilib import Vilib
 import subprocess
 import os
 
-# Initialize PiCrawler
+# Initialize: PiCrawler
 crawler = Picrawler()           
 
 # --- START THE LIVE VIDEO FEED ---
