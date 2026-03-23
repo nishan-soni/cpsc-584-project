@@ -4,7 +4,7 @@ import Topbar from './Topbar';
 import Vignette from './Vignette'
 
 
-const IMG_PATH = "https://science.nasa.gov/wp-content/uploads/2023/09/stsci-01ga76rm0c11w977jrhgj5j26x-2.png?w=1024"
+const IMG_PATH = "http://172.17.10.193:9000/mjpg"
 
 const VIGNETTE_COLORS = {
   GREEN: 'rgba(59, 178, 115, 0.4)',
@@ -15,7 +15,7 @@ const VIGNETTE_COLORS = {
 function Hud() {
 
     return (
-        <div className="relative flex flex-col h-10/12 w-10/12 m-auto border-2">
+        <div className="relative flex flex-col m-auto border-2">
             <Vignette colour={VIGNETTE_COLORS.GREEN}>
                 <Topbar/>
                 <Crosshair/>
