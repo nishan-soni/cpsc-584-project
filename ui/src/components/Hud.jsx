@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 
 
 // const IMG_PATH = "http://172.17.10.193:9000/mjpg"
-const IMG_PATH = "https://science.nasa.gov/wp-content/uploads/2023/09/stsci-01ga76rm0c11w977jrhgj5j26x-2.png?w=1024"
+const IMG_PATH = "http://192.168.1.97:9000/mjpg"
 
 const VIGNETTE_COLORS = {
   GREEN: 'rgba(59, 178, 115, 0.4)',
@@ -22,6 +22,8 @@ const SPEEDS = new Set(["speed_normal", "speed_sprint", "speed_ghost"]);
 
 const LEAN = new Set(["look_up", "look_down", "lean_left", "lean_right"]);
 
+const TARGETS = new Set(["target_detected", "no_target"]);
+
 function Hud() {
 
     const [messages, setMessages] = useState([]);
@@ -29,6 +31,7 @@ function Hud() {
     const [recording, setRecording] = useState(false)
     const [direction, setDirection] = useState("stopped")
     const [speed, setSpeed] = useState("speed_normal")
+    const [target, setTarget] = useState("no_target")
 
     useEffect(() => {
         const socket = new WebSocket("ws://localhost:8765");
@@ -57,6 +60,10 @@ function Hud() {
                 setSpeed(incomingMessage)
             }
 
+            if (TARGETS.has(incomingMessage)) {
+                setTarget(incomingMessage)
+            }
+
             // if (incomingMessage === "stop" || incomingMessage === "stand" || incomingMessage === "speed_normal" || incomingMessage === "cam_stop") {
             //     setAction("")
             //     return
@@ -75,15 +82,7 @@ function Hud() {
 
     return (
         <div className="relative flex flex-col m-auto border-2">
-            <Vignette
-                colour={
-                    messages.at(-1) === 'enemy'
-                        ? VIGNETTE_COLORS.RED
-                        : messages.at(-1) === 'target'
-                            ? VIGNETTE_COLORS.GREEN
-                            : VIGNETTE_COLORS.NONE
-                }
-            >
+            <Vignette colour={VIGNETTE_COLORS.RED ? target === "target_detected" : VIGNETTE_COLORS.NONE}>
                 <Topbar direction={direction} speed={speed}/>
                 <Crosshair/>
                 <img className="max-w-full max-h-full block" src={IMG_PATH} alt="Live Video"/>
