@@ -1,6 +1,6 @@
 from pydualsense import pydualsense
 import socket
-from time import sleep
+from time import sleep, perf_counter
 
 import asyncio
 import websockets
@@ -13,19 +13,19 @@ async def ui_websocket_handler(web_socket):
     ui_socket = web_socket
     await web_socket.wait_closed()
 
-HOST = '172.17.10.193' 
+HOST = '192.168.1.97' 
 PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # ======================Uncomment this soon=============================================
-# try:
-#     print(f"Connecting to PiCrawler at {HOST}:{PORT}...")
-#     client_socket.connect((HOST, PORT))
-#     print("Connected successfully!")
-# except Exception as e:
-#     print(f"Failed to connect: {e}")
-#     exit()
+try:
+    print(f"Connecting to PiCrawler at {HOST}:{PORT}...")
+    client_socket.connect((HOST, PORT))
+    print("Connected successfully!")
+except Exception as e:
+    print(f"Failed to connect: {e}")
+    exit()
 
 async def send_command(cmd):
     try:
@@ -41,19 +41,35 @@ async def start():
     await asyncio.sleep(1)
     loop = asyncio.get_running_loop()
 
+    def schedule(coro):
+        asyncio.run_coroutine_threadsafe(coro, loop)
+
     # --- START RUMBLE LISTENER THREAD ---
     def listen_for_rumble():
+        last_detection = perf_counter()
         while True:
             try:
                 data = client_socket.recv(1024).decode('utf-8')
                 if "RUMBLE" in data:
                     print("🚨 ENEMY SPOTTED! RUMBLING THE CONTROLLER! 🚨")
+
+                    schedule(ui_socket.send("target_detected"))
+
+                    # Only vibrate every 3 seconds
+                    current_time = perf_counter()
+                    if current_time - last_detection < 3:
+                        continue
+                    
+                    last_detection = perf_counter()
                     ds.setLeftMotor(255)  
                     ds.setRightMotor(255) 
                     sleep(0.5)  
                     ds.setLeftMotor(0)
                     ds.setRightMotor(0)
-            except Exception:
+                else:
+                    schedule(ui_socket.send("no_target"))
+            except Exception as e:
+                print("rumble failed", e)
                 break
                 
     import threading
@@ -62,8 +78,6 @@ async def start():
     robot_state = {"move": "stop", "cam": "cam_stop", "speed": "speed_normal"}
 
 
-    def schedule(coro):
-        asyncio.run_coroutine_threadsafe(coro, loop)
 
     async def handle_button_release():
         if robot_state["move"] == "stop":
