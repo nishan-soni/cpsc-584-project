@@ -1,11 +1,17 @@
+import { TbPlaystationCircle, TbPlaystationSquare, TbPlaystationTriangle, TbPlaystationX } from "react-icons/tb";
+
 export default function Controls() {
 
 
     const mappings = [
+        { button: 'Left Joystick', action: 'Movement' },
+        { button: 'Right Joystick', action: 'Glance' },
         { button: 'R2', action: 'Sprint' },
         { button: 'L2', action: 'Slow' },
-        { button: '△', action: 'Look Over' },
-        { button: '□', action: 'Take a Picture' },
+        { button: <TbPlaystationTriangle/>, action: 'Stand Tall' },
+        { button: <TbPlaystationSquare/>, action: 'Take a Picture' },
+        { button: <TbPlaystationCircle/>, action: 'Record Video' },
+        { button: <TbPlaystationX/>, action: 'Crouch' },
     ];
 
     return (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function Topbar({direction = "stopped", speed = "speed_normal", took_photo = false}) {
+function Topbar({direction = "stopped", speed = "speed_normal", took_photo = false, recording = false}) {
   const [now, setNow] = useState(new Date());
   const panelClass = "p-2 bg-white/35 text-black backdrop-blur-md border border-white/50 rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.18)] font-mono";
   const groupClass = "flex flex-row gap-1 p-1 bg-white/35 text-black backdrop-blur-md border border-white/50 rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.18)]";
@@ -39,6 +39,12 @@ function Topbar({direction = "stopped", speed = "speed_normal", took_photo = fal
         <div className={panelClass}>
           {speed}
         </div>
+        {recording && (
+          <div className={panelClass}>
+            recording...
+          </div>
+        )
+        }
       </div>
 
     </div>

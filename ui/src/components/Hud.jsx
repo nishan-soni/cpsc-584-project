@@ -28,6 +28,8 @@ const TARGETS = new Set(["target_detected", "no_target"]);
 
 const MENU = new Set(["open_menu", "close_menu"]);
 
+const RECORDING = "toggle_record"
+
 function Hud() {
 
     const [, setMessages] = useState([]);
@@ -37,6 +39,7 @@ function Hud() {
     const [menu, setMenu] = useState("close_menu")
     const [tookPhoto, setTookPhoto] = useState(false)
     const tookPhotoTimeoutRef = useRef(null)
+    const [recording, setRecording] = useState(false)
 
     useEffect(() => {
         const socket = new WebSocket("ws://localhost:8765");
@@ -74,6 +77,11 @@ function Hud() {
             if (MENU.has(incomingMessage)) {
                 setMenu(incomingMessage)
             }
+
+            if (incomingMessage === "toggle_record") {
+                console.log("cam_t", !recording)
+                setRecording(!recording)
+            }
             
             setMessages((prev) => [...prev, incomingMessage]);
 
@@ -86,12 +94,12 @@ function Hud() {
                 clearTimeout(tookPhotoTimeoutRef.current)
             }
         };
-  }, []);
+  }, [recording]);
 
     return (
         <div className="relative flex flex-col m-auto border-2">
             <Vignette colour={VIGNETTE_COLORS.NONE}>
-                <Topbar direction={direction} speed={speed} took_photo = {tookPhoto}/>
+                <Topbar direction={direction} speed={speed} took_photo = {tookPhoto} recording = {recording}/>
                 <Crosshair/>
                 <img className="max-w-full max-h-full block" src={IMG_PATH} alt="Live Video"/>
                 {menu === "open_menu" &&
