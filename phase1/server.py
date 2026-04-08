@@ -17,10 +17,12 @@ import cv2
 original_putText = cv2.putText
 def custom_putText(img, text, org, fontFace, fontScale, color, thickness=1, lineType=cv2.LINE_8, bottomLeftOrigin=False):
     if text == "red": text = "ENEMY"
+    if text == "green": text = "TARGET"
     return original_putText(img, text, org, fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin)
 cv2.putText = custom_putText
 
-Vilib.color_detect("red")  
+Vilib.color_detect("red")
+Vilib.color_detect("green")
 
 # --- START THE PHOTO GALLERY SERVER ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

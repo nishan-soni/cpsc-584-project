@@ -18,14 +18,15 @@ PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# ======================Uncomment this soon=============================================
-try:
-    print(f"Connecting to PiCrawler at {HOST}:{PORT}...")
-    client_socket.connect((HOST, PORT))
-    print("Connected successfully!")
-except Exception as e:
-    print(f"Failed to connect: {e}")
-    exit()
+# ======================Comment to test ui=============================================
+# try:
+#     print(f"Connecting to PiCrawler at {HOST}:{PORT}...")
+#     client_socket.connect((HOST, PORT))
+#     print("Connected successfully!")
+# except Exception as e:
+#     print(f"Failed to connect: {e}")
+#     exit()
+# ======================Comment to test ui=============================================
 
 async def send_command(cmd):
     try:
@@ -83,6 +84,7 @@ async def start():
         if robot_state["move"] == "stop":
             await send_command("stand")
 
+
     # --- THE SPY POSTURES & CAMERA (Face Buttons) ---
     ds.triangle_pressed += lambda state: schedule(send_command("high_posture")) if state else schedule(handle_button_release())
     ds.cross_pressed += lambda state: schedule(send_command("stealth_mode")) if state else schedule(handle_button_release())
@@ -90,6 +92,17 @@ async def start():
     # Send camera commands ONLY when the button is pressed down (state == True)
     ds.square_pressed += lambda state: schedule(send_command("take_photo")) if state else None
     ds.circle_pressed += lambda state: schedule(send_command("toggle_record")) if state else None
+
+    # Help Menu
+    menu_open = False
+
+    def toggle_menu(state):
+        nonlocal menu_open
+        if state:
+            menu_open = not menu_open
+            schedule(send_command("open_menu" if menu_open else "close_menu"))
+
+    ds.l1_changed += toggle_menu
 
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     

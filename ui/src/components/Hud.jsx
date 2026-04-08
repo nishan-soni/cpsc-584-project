@@ -1,13 +1,15 @@
 
+import Controls from './Controls';
 import Crosshair from './Crosshair'
 import Topbar from './Topbar';
 import Vignette from './Vignette'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 
 // const IMG_PATH = "http://172.17.10.193:9000/mjpg"
-const IMG_PATH = "http://192.168.1.97:9000/mjpg"
+// const IMG_PATH = "http://192.168.1.97:9000/mjpg"
+const IMG_PATH = "https://cdn.pixabay.com/photo/2024/02/12/16/05/siguniang-mountain-8568913_1280.jpg"
 
 const VIGNETTE_COLORS = {
   GREEN: 'rgba(59, 178, 115, 0.4)',
@@ -20,18 +22,21 @@ const DIRECTIONS = new Set(["stop", "forward", "back", "left", "right"]);
 
 const SPEEDS = new Set(["speed_normal", "speed_sprint", "speed_ghost"]);
 
-const LEAN = new Set(["look_up", "look_down", "lean_left", "lean_right"]);
+// const LEAN = new Set(["look_up", "look_down", "lean_left", "lean_right"]);
 
 const TARGETS = new Set(["target_detected", "no_target"]);
 
+const MENU = new Set(["open_menu", "close_menu"]);
+
 function Hud() {
 
-    const [messages, setMessages] = useState([]);
-    const [action, setAction] = useState("")
-    const [recording, setRecording] = useState(false)
+    const [, setMessages] = useState([]);
     const [direction, setDirection] = useState("stopped")
     const [speed, setSpeed] = useState("speed_normal")
     const [target, setTarget] = useState("no_target")
+    const [menu, setMenu] = useState("close_menu")
+    const [tookPhoto, setTookPhoto] = useState(false)
+    const tookPhotoTimeoutRef = useRef(null)
 
     useEffect(() => {
         const socket = new WebSocket("ws://localhost:8765");
@@ -42,13 +47,15 @@ function Hud() {
 
             const incomingMessage = String(event.data).trim();
 
-            if (incomingMessage === "toggle_record") {
-                setRecording(true)
-                return
-            }
-
             if (incomingMessage === "take_photo") {
-                // do smth
+                setTookPhoto(true)
+                if (tookPhotoTimeoutRef.current) {
+                    clearTimeout(tookPhotoTimeoutRef.current)
+                }
+                tookPhotoTimeoutRef.current = setTimeout(() => {
+                    setTookPhoto(false)
+                    tookPhotoTimeoutRef.current = null
+                }, 1000)
                 return
             }
 
@@ -64,28 +71,32 @@ function Hud() {
                 setTarget(incomingMessage)
             }
 
-            // if (incomingMessage === "stop" || incomingMessage === "stand" || incomingMessage === "speed_normal" || incomingMessage === "cam_stop") {
-            //     setAction("")
-            //     return
-            // }
-
-
-            setAction(incomingMessage);
+            if (MENU.has(incomingMessage)) {
+                setMenu(incomingMessage)
+            }
             
             setMessages((prev) => [...prev, incomingMessage]);
 
         };
         socket.onclose = () => console.log("Disconnected");
 
-        return () => socket.close();
+        return () => {
+            socket.close();
+            if (tookPhotoTimeoutRef.current) {
+                clearTimeout(tookPhotoTimeoutRef.current)
+            }
+        };
   }, []);
 
     return (
         <div className="relative flex flex-col m-auto border-2">
-            <Vignette colour={VIGNETTE_COLORS.RED ? target === "target_detected" : VIGNETTE_COLORS.NONE}>
-                <Topbar direction={direction} speed={speed}/>
+            <Vignette colour={VIGNETTE_COLORS.NONE}>
+                <Topbar direction={direction} speed={speed} took_photo = {tookPhoto}/>
                 <Crosshair/>
                 <img className="max-w-full max-h-full block" src={IMG_PATH} alt="Live Video"/>
+                {menu === "open_menu" &&
+                    <Controls/>
+                }
             </Vignette>
         </div>
     )
