@@ -88,7 +88,8 @@ def start_server():
                             time.sleep(1.0) 
                         else:
                             time.sleep(0.1) 
-                    except Exception:
+                    except Exception as e:
+                        print(e)
                         break 
 
             import threading
