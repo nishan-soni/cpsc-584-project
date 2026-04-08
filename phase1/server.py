@@ -88,8 +88,8 @@ def start_server():
                             time.sleep(1.0) 
                         else:
                             time.sleep(0.1) 
-                    except Exception:
-                        break 
+                    except Exception as e:
+                        print(e)
 
             import threading
             threading.Thread(target=rumble_monitor, daemon=True).start()
