@@ -13,19 +13,19 @@ async def ui_websocket_handler(web_socket):
     ui_socket = web_socket
     await web_socket.wait_closed()
 
-HOST = '192.168.1.97' 
+HOST = '172.17.10.217' 
 PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # ======================Comment to test ui=============================================
-# try:
-#     print(f"Connecting to PiCrawler at {HOST}:{PORT}...")
-#     client_socket.connect((HOST, PORT))
-#     print("Connected successfully!")
-# except Exception as e:
-#     print(f"Failed to connect: {e}")
-#     exit()
+try:
+    print(f"Connecting to PiCrawler at {HOST}:{PORT}...")
+    client_socket.connect((HOST, PORT))
+    print("Connected successfully!")
+except Exception as e:
+    print(f"Failed to connect: {e}")
+    exit()
 # ======================Comment to test ui=============================================
 
 async def send_command(cmd):
@@ -47,18 +47,16 @@ async def start():
 
     # --- START RUMBLE LISTENER THREAD ---
     def listen_for_rumble():
-        last_detection = perf_counter()
+        last_detection = None
         while True:
             try:
                 data = client_socket.recv(1024).decode('utf-8')
                 if "RUMBLE" in data:
                     print("🚨 ENEMY SPOTTED! RUMBLING THE CONTROLLER! 🚨")
 
-                    schedule(ui_socket.send("target_detected"))
-
                     # Only vibrate every 3 seconds
                     current_time = perf_counter()
-                    if current_time - last_detection < 3:
+                    if last_detection and current_time - last_detection < 2 :
                         continue
                     
                     last_detection = perf_counter()
