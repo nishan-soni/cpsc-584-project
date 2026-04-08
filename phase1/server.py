@@ -22,7 +22,7 @@ def custom_putText(img, text, org, fontFace, fontScale, color, thickness=1, line
 cv2.putText = custom_putText
 
 Vilib.color_detect("red")
-# Vilib.color_detect("green")
+Vilib.color_detect("green")
 
 # --- START THE PHOTO GALLERY SERVER ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -88,9 +88,8 @@ def start_server():
                             time.sleep(1.0) 
                         else:
                             time.sleep(0.1) 
-                    except Exception as e:
-                        print(e)
-                        break
+                    except Exception:
+                        break 
 
             import threading
             threading.Thread(target=rumble_monitor, daemon=True).start()
