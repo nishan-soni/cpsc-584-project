@@ -22,7 +22,7 @@ def custom_putText(img, text, org, fontFace, fontScale, color, thickness=1, line
 cv2.putText = custom_putText
 
 Vilib.color_detect("red")
-Vilib.color_detect("green")
+# Vilib.color_detect("green")
 
 # --- START THE PHOTO GALLERY SERVER ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

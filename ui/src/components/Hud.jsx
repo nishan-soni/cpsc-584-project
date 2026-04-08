@@ -7,9 +7,9 @@ import Vignette from './Vignette'
 import { useEffect, useRef, useState } from 'react';
 
 
-// const IMG_PATH = "http://172.17.10.193:9000/mjpg"
+const IMG_PATH = "http://172.17.10.217:9000/mjpg"
 // const IMG_PATH = "http://192.168.1.97:9000/mjpg"
-const IMG_PATH = "https://cdn.pixabay.com/photo/2024/02/12/16/05/siguniang-mountain-8568913_1280.jpg"
+// const IMG_PATH = "https://cdn.pixabay.com/photo/2024/02/12/16/05/siguniang-mountain-8568913_1280.jpg"
 
 const VIGNETTE_COLORS = {
   GREEN: 'rgba(59, 178, 115, 0.4)',
