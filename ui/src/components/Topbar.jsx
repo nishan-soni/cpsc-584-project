@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function Topbar({direction = "stopped", speed = "speed_normal", took_photo = false, recording = false}) {
+function Topbar({direction = "stopped", speed = "speed_normal", took_photo = false, recording = false, enemy_detected = false}) {
   const [now, setNow] = useState(new Date());
   const panelClass = "p-2 bg-white/35 text-black backdrop-blur-md border border-white/50 rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.18)] font-mono";
   const groupClass = "flex flex-row gap-1 p-1 bg-white/35 text-black backdrop-blur-md border border-white/50 rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.18)]";
@@ -29,6 +29,13 @@ function Topbar({direction = "stopped", speed = "speed_normal", took_photo = fal
           <div className={groupClass}>
             <div className={panelClass}>
               photo taken
+            </div>
+          </div>
+        }
+        {enemy_detected &&
+          <div className={groupClass}>
+            <div className={panelClass}>
+              Compromised! R1 to escape.
             </div>
           </div>
         }

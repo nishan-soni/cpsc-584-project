@@ -1,6 +1,7 @@
 from pydualsense import pydualsense
 import socket
 from time import sleep, perf_counter
+from collections import deque
 
 import asyncio
 import websockets
@@ -28,13 +29,35 @@ except Exception as e:
     exit()
 # ======================Comment to test ui=============================================
 
+
+last_20_steps = deque(maxlen=20)
+
 async def send_command(cmd):
     try:
-        await ui_socket.send(cmd)
+        if cmd in ('forward', 'back', 'left', 'right', 'stop'):
+            last_20_steps.append((cmd, perf_counter())) # Append action and the time it was sent
+        if ui_socket is not None:
+            await ui_socket.send(cmd)
         print("command sent to the ui")
         client_socket.sendall((cmd + '\n').encode('utf-8'))
     except Exception as e:
         print(f"Connection lost: {e}")
+
+async def avoid_target():
+    print("AVOIDING TARGET\n")
+    print(last_20_steps)
+    opposites = {'forward': 'back', 'back': 'forward', 'left': 'right', 'right': 'left', 'stop': 'stop'}
+    step_order = []
+
+    for index, (step, time) in enumerate(list(last_20_steps)[:-1]): # Assumes the last step is 'stop'
+        step_order.append((step, last_20_steps[index + 1][1] - time))
+    
+    print(step_order)
+    for step in step_order[::-1]:
+        await send_command(opposites[step[0]])
+        await asyncio.sleep(step[1])
+    await send_command('stop')
+    last_20_steps.clear()
 
 async def start():
     ds = pydualsense()
@@ -48,25 +71,44 @@ async def start():
     # --- START RUMBLE LISTENER THREAD ---
     def listen_for_rumble():
         last_detection = None
+        last_ui_status = None
+        target_hold_seconds = 2.0
+
+        def emit_status(status):
+            nonlocal last_ui_status
+            if status != last_ui_status and ui_socket is not None:
+                schedule(ui_socket.send(status))
+                last_ui_status = status
+
+        client_socket.settimeout(0.5)
         while True:
             try:
-                data = client_socket.recv(1024).decode('utf-8')
+                raw = client_socket.recv(1024)
+                if not raw:
+                    print("PiCrawler socket closed")
+                    emit_status("no_target")
+                    break
+
+                data = raw.decode('utf-8').strip()
+
                 if "RUMBLE" in data:
-                    print("🚨 ENEMY SPOTTED! RUMBLING THE CONTROLLER! 🚨")
+                    print("ENEMY SPOTTED! RUMBLING THE CONTROLLER!")
 
                     # Only vibrate every 3 seconds
                     current_time = perf_counter()
                     if last_detection and current_time - last_detection < 2 :
                         continue
-                    
                     last_detection = perf_counter()
+                    emit_status("target_detected")
+
                     ds.setLeftMotor(255)  
                     ds.setRightMotor(255) 
                     sleep(0.5)  
                     ds.setLeftMotor(0)
                     ds.setRightMotor(0)
-                else:
-                    schedule(ui_socket.send("no_target"))
+            except socket.timeout:
+                if last_detection is None or perf_counter() - last_detection >= target_hold_seconds:
+                    emit_status("no_target")
             except Exception as e:
                 print("rumble failed", e)
                 break
@@ -75,7 +117,6 @@ async def start():
     threading.Thread(target=listen_for_rumble, daemon=True).start()
 
     robot_state = {"move": "stop", "cam": "cam_stop", "speed": "speed_normal"}
-
 
 
     async def handle_button_release():
@@ -101,6 +142,7 @@ async def start():
             schedule(send_command("open_menu" if menu_open else "close_menu"))
 
     ds.l1_changed += toggle_menu
+    ds.r1_changed += lambda state: schedule(avoid_target()) if state else None
 
     print("Listening for PS5 controller input. Press Ctrl+C to exit.")
     
@@ -135,8 +177,6 @@ async def start():
                 await send_command(new_cam)
                 robot_state["cam"] = new_cam
                 
-            # --- TRIGGERS (Speed Controls using Polling) ---
-            # In pydualsense L2 and R2 go from 0 to 255.
             try:
                 l2 = getattr(ds.state, 'L2', 0)
                 r2 = getattr(ds.state, 'R2', 0)
@@ -155,7 +195,6 @@ async def start():
                 await send_command(new_speed)
                 robot_state["speed"] = new_speed
                 
-            # Real-time debug print of all axes
             print(f"DEBUG | LX:{lx:^4} LY:{ly:^4} | RX:{rx:^4} RY:{ry:^4} | L2:{l2:^3} R2:{r2:^3}   ", end="\r")
             
             await asyncio.sleep(0.05)

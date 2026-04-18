@@ -10,25 +10,16 @@ import threading
 import time
 from flask import Flask, Response
 
-# Initialize PiCrawler
 crawler = Picrawler()
 
-# --- START CAMERA (no web display — we serve our own annotated stream) ---
 Vilib.camera_start(vflip=False, hflip=False, size=(1280, 720))
-# NOTE: Do NOT call Vilib.display() — we run our own MJPEG server below
 
-# -----------------------------------------------------------------------
-# MULTI-COLOR DETECTION + ANNOTATED MJPEG STREAM
-# We grab Vilib.img, draw boxes for red and green, then serve that
-# annotated frame ourselves on port 9000 at /mjpg — same URL as before.
-# -----------------------------------------------------------------------
 
 color_detections = {
     "red":   {"n": 0, "x": 0, "y": 0, "w": 0, "h": 0},
     "green": {"n": 0, "x": 0, "y": 0, "w": 0, "h": 0},
 }
 
-# Shared annotated frame (JPEG bytes) for the MJPEG stream
 latest_jpeg = None
 jpeg_lock = threading.Lock()
 
@@ -43,8 +34,6 @@ def multi_color_detect_loop():
                 time.sleep(0.05)
                 continue
 
-            # Convert to numpy array if it isn't one already
-            # (Picamera2 can return various formats)
             if not isinstance(frame, np.ndarray):
                 frame = np.array(frame)
 
@@ -52,11 +41,9 @@ def multi_color_detect_loop():
                 time.sleep(0.05)
                 continue
 
-            # Vilib/Picamera2 gives RGB, OpenCV needs BGR
             if frame.shape[2] == 3:
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-            # Work on a copy so we don't interfere with Vilib internals
             annotated = frame.copy()
             hsv = cv2.cvtColor(annotated, cv2.COLOR_BGR2HSV)
 
@@ -92,7 +79,6 @@ def multi_color_detect_loop():
                 else:
                     color_detections[color_name] = {"n": 0, "x": 0, "y": 0, "w": 0, "h": 0}
 
-            # Encode annotated frame as JPEG for streaming
             ok, jpg = cv2.imencode('.jpg', annotated, [cv2.IMWRITE_JPEG_QUALITY, 70])
             if ok:
                 with jpeg_lock:
@@ -117,7 +103,6 @@ def generate_mjpeg():
 # Start detection thread
 threading.Thread(target=multi_color_detect_loop, daemon=True).start()
 
-# Start our own annotated MJPEG Flask server on port 9000
 stream_app = Flask(__name__)
 
 @stream_app.route('/mjpg')
@@ -130,7 +115,6 @@ print("Annotated spy camera feed live at: http://172.17.10.193:9000/mjpg")
 
 # -----------------------------------------------------------------------
 
-# --- PHOTO GALLERY SERVER ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 PICS_DIR = os.path.join(MEDIA_DIR, 'Pictures')
@@ -145,7 +129,6 @@ Vilib.rec_video_set["fps"] = 10.0
 
 http_server = subprocess.Popen(["python3", "-m", "http.server", "8000"],
                                cwd=MEDIA_DIR, stderr=subprocess.DEVNULL)
-print(f"Photo Gallery live at: http://172.17.10.193:8000")
 
 HOST = '0.0.0.0'
 PORT = 65432
@@ -216,19 +199,19 @@ def start_server():
                             current_move = command
                         elif command == 'speed_sprint':
                             current_speed = 100
-                            print(f"🏎️ SPRINT MODE ENGAGED (Speed: {current_speed})")
+                            print(f"SPRINT MODE (Speed: {current_speed})")
                         elif command == 'speed_ghost':
                             current_speed = 20
-                            print(f"👻 GHOST MODE ENGAGED (Speed: {current_speed})")
+                            print(f"GHOST MODE (Speed: {current_speed})")
                         elif command == 'speed_normal':
                             current_speed = 60
-                            print(f"🚶 NORMAL SPEED (Speed: {current_speed})")
+                            print(f"NORMAL SPEED (Speed: {current_speed})")
 
                         elif command == 'take_photo':
                             timestamp = int(time.time())
                             file_name = f'spy_photo_{timestamp}'
                             Vilib.take_photo(file_name, PICS_DIR)
-                            print(f"📸 Photo taken! Saved to {PICS_DIR}/{file_name}.jpg")
+                            print(f"Photo taken! Saved to {PICS_DIR}/{file_name}.jpg")
 
                         elif command == 'toggle_record':
                             if is_recording:
@@ -246,7 +229,7 @@ def start_server():
                                             print(f"🎬 Conversion complete: {mp4}")
                                             os.remove(avi)
                                     except FileNotFoundError:
-                                        print("⚠️ FFmpeg not found — video stays as .avi")
+                                        print("FFmpeg not found — video stays as .avi")
 
                                 threading.Thread(target=convert_video, args=(avi_path, mp4_path), daemon=True).start()
 
